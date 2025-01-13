@@ -1,0 +1,17 @@
+{
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "semi": true,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "importSort": {
+    "groups": [
+      ["builtin", "external"],
+      ["internal"],
+      ["sibling", "parent", "index"]
+    ],
+    "newlines-between": "always"
+  }
+}
