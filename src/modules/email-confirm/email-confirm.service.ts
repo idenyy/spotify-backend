@@ -6,12 +6,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthMethod, TokenType } from '@prisma/client';
 import { v4 as uuid } from 'uuid';
-import { MailService } from '../../common/libs/mail/mail.service';
+import { MailService } from '@/common/libs/mail/mail.service';
 import { UserService } from '../user/user.service';
 import { AuthService } from '../auth/auth.service';
 import { ConfirmationDto } from './dto/email-confirm.dto';
+import { AuthMethod, TokenType } from '@prisma/__generated__';
 
 @Injectable()
 export class EmailConfirmService {
