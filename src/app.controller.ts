@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
 
 @Controller()
-export class AuthController {
+export class AppController {
   @Get()
   @HttpCode(HttpStatus.OK)
   public async server() {
