@@ -73,6 +73,15 @@ export class EmailConfirmService {
     const token = uuid();
     const expiresIn = new Date(new Date().getTime() + 1800 * 1000);
 
+    const existingToken = await this.prismaService.token.findFirst({
+      where: { email: userData.email, type: TokenType.VERIFICATION },
+    });
+
+    if (existingToken)
+      await this.prismaService.token.delete({
+        where: { id: existingToken.id, type: TokenType.VERIFICATION },
+      });
+
     await this.prismaService.token.create({
       data: {
         email: userData.email,
