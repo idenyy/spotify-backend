@@ -11,9 +11,9 @@ export class MailService {
     private readonly configService: ConfigService,
   ) {}
 
-  public async sendConfirmationEmail(email: string, token: string) {
+  public async sendConfirmationEmail(name: string, email: string, token: string) {
     const domain = this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
-    const html = await render(ConfirmationTemplate({ domain, token }));
+    const html = await render(ConfirmationTemplate({ name, domain, token }));
 
     return this.sendMail(email, 'Mail Confirmation', html);
   }
