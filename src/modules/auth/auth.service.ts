@@ -102,7 +102,6 @@ export class AuthService {
 
     res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), refreshToken, {
       httpOnly: true,
-      domain: 'localhost',
       expires,
       secure: true,
       sameSite: 'lax',
@@ -112,9 +111,8 @@ export class AuthService {
   removeRefreshToken(res: Response) {
     res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), '', {
       httpOnly: true,
-      domain: 'localhost',
       expires: new Date(0),
-      secure: true,
+      secure: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
     });
   }
