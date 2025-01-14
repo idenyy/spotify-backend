@@ -12,6 +12,7 @@ import { UserService } from '../user/user.service';
 import { AuthService } from '../auth/auth.service';
 import { ConfirmationDto } from './dto/email-confirm.dto';
 import { AuthMethod, TokenType } from '@prisma/__generated__';
+import { hash } from 'argon2';
 
 @Injectable()
 export class EmailConfirmService {
@@ -81,6 +82,8 @@ export class EmailConfirmService {
       await this.prismaService.token.delete({
         where: { id: existingToken.id, type: TokenType.VERIFICATION },
       });
+
+    userData.password = userData.password ? await hash(userData.password) : '';
 
     await this.prismaService.token.create({
       data: {

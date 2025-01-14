@@ -1,6 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { hash } from 'argon2';
 import { AuthMethod } from '@prisma/__generated__';
 
 @Injectable()
@@ -47,7 +46,7 @@ export class UserService {
       data: {
         name,
         email,
-        password: password ? await hash(password) : '',
+        password,
         picture,
         method,
         isVerified,
