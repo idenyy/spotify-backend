@@ -17,13 +17,11 @@ export function ConfirmationTemplate({ name, domain, token }: ConfirmationTempla
         <Body className="bg-[#f4f4f4] text-[#333] font-sans p-6">
           <div className="max-w-xl mx-auto bg-white rounded-lg shadow-md p-6">
             <div className="text-center mb-6">
-              <img
-                src="https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg"
-                alt="Spotify Logo"
-                className="w-24 mx-auto"
-              />
+              <Heading className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
+                Spotify Clone
+              </Heading>
             </div>
-            <Heading className="text-2xl font-bold text-[#1DB954] mb-4 text-center">
+            <Heading className="text-xl font-bold text-[#1DB954] mb-4 text-center">
               Account Confirmation
             </Heading>
             <Text className="mb-4 text-base text-center">Hi {name},</Text>
