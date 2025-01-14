@@ -5,6 +5,6 @@ export class AppController {
   @Get()
   @HttpCode(HttpStatus.OK)
   public async server() {
-    return 'Sever is working...';
+    return 'Server is working...';
   }
 }
