@@ -17,13 +17,13 @@ export class EmailConfirmController {
     @Body() dto: ConfirmationDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const { accessToken, refreshToken, ...user } = await this.emailConfirmService.verification(dto);
-    this.authService.addRefreshToken(res, refreshToken);
+    const verification = await this.emailConfirmService.verification(dto);
+    this.authService.addRefreshToken(res, verification.refreshToken);
 
     return {
       message: 'Your email has been successfully verified',
-      user,
-      accessToken,
+      user: verification.user,
+      accessToken: verification.accessToken,
     };
   }
 }

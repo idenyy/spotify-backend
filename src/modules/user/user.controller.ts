@@ -2,7 +2,7 @@ import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
 import { UserService } from './user.service';
 import { Authorization } from '@/common/decorators/auth.decorator';
 import { Authorized } from '@/common/decorators/authorized.decorator';
-import { UserRole } from '@prisma/__generated__';
+import { UserRole } from '@/common/schemas/enums';
 
 @Controller('users')
 export class UserController {
@@ -11,7 +11,7 @@ export class UserController {
   @Authorization()
   @HttpCode(HttpStatus.OK)
   @Get('profile')
-  public async findProfile(@Authorized('id') userId: string) {
+  public async findProfile(@Authorized('_id') userId: string) {
     return this.userService.findById(userId);
   }
 

@@ -1,3 +1,5 @@
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import {
   BadRequestException,
   forwardRef,
@@ -5,19 +7,19 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { v4 as uuid } from 'uuid';
 import { MailService } from '@/common/libs/mail/mail.service';
 import { UserService } from '../user/user.service';
 import { AuthService } from '../auth/auth.service';
 import { ConfirmationDto } from './dto/email-confirm.dto';
-import { AuthMethod, TokenType } from '@prisma/__generated__';
 import { hash } from 'argon2';
+import { TokenDocument } from '@/common/schemas/token.schema';
+import { AuthMethod, TokenType } from '@/common/schemas/enums';
 
 @Injectable()
 export class EmailConfirmService {
   constructor(
-    private readonly prismaService: PrismaService,
+    @InjectModel('Token') private readonly tokenModel: Model<TokenDocument>,
     private readonly mailService: MailService,
     private readonly userService: UserService,
     @Inject(forwardRef(() => AuthService))
@@ -33,9 +35,13 @@ export class EmailConfirmService {
   }
 
   public async verification(dto: ConfirmationDto) {
-    const existingToken = await this.prismaService.token.findUnique({
-      where: { token: dto.token, type: TokenType.VERIFICATION },
-    });
+    const existingToken = await this.tokenModel
+      .findOne({
+        token: dto.token,
+        type: TokenType.VERIFICATION,
+      })
+      .exec();
+
     if (!existingToken) throw new NotFoundException(`Token ${dto.token} not found`);
 
     const hasExpired = new Date(existingToken.expiresIn) < new Date();
@@ -57,13 +63,11 @@ export class EmailConfirmService {
       true,
     );
 
-    await this.prismaService.token.delete({
-      where: { id: existingToken.id },
-    });
+    await this.tokenModel.deleteOne({ _id: existingToken._id }).exec();
 
     const tokens = this.authService.issueTokens(user.id);
 
-    return { user, ...tokens };
+    return { user: user, ...tokens };
   }
 
   private async generateVerificationToken(userData: {
@@ -74,25 +78,23 @@ export class EmailConfirmService {
     const token = uuid();
     const expiresIn = new Date(new Date().getTime() + 1800 * 1000);
 
-    const existingToken = await this.prismaService.token.findFirst({
-      where: { email: userData.email, type: TokenType.VERIFICATION },
-    });
+    const existingToken = await this.tokenModel
+      .findOne({
+        email: userData.email,
+        type: TokenType.VERIFICATION,
+      })
+      .exec();
 
-    if (existingToken)
-      await this.prismaService.token.delete({
-        where: { id: existingToken.id, type: TokenType.VERIFICATION },
-      });
+    if (existingToken) await this.tokenModel.deleteOne({ _id: existingToken._id }).exec();
 
     userData.password = userData.password ? await hash(userData.password) : '';
 
-    await this.prismaService.token.create({
-      data: {
-        email: userData.email,
-        token,
-        expiresIn,
-        type: TokenType.VERIFICATION,
-        data: userData,
-      },
+    await this.tokenModel.create({
+      email: userData.email,
+      token,
+      expiresIn,
+      type: TokenType.VERIFICATION,
+      data: userData,
     });
 
     return token;

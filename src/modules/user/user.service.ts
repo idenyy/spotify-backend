@@ -1,18 +1,14 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuthMethod } from '@prisma/__generated__';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from '@/common/schemas/user.schema';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<UserDocument>) {}
 
   public async findById(id: string) {
-    const user = await this.prismaService.user.findUnique({
-      where: { id },
-      include: {
-        accounts: true,
-      },
-    });
+    const user = await this.userModel.findById(id).exec();
 
     if (!user) throw new NotFoundException('User not found');
 
@@ -20,12 +16,7 @@ export class UserService {
   }
 
   public async findByEmail(email: string) {
-    return this.prismaService.user.findUnique({
-      where: { email },
-      include: {
-        accounts: true,
-      },
-    });
+    return this.userModel.findOne({ email }).exec();
   }
 
   public async create(
@@ -33,29 +24,25 @@ export class UserService {
     email: string,
     password: string,
     picture: string,
-    method: AuthMethod,
+    method: string,
     isVerified: boolean,
   ) {
-    const existingUser = await this.prismaService.user.findUnique({
-      where: { email },
-    });
+    const existingUser = await this.userModel.findOne({ email }).exec();
 
     if (existingUser) throw new ConflictException(`User with email ${email} already exists`);
 
-    const user = await this.prismaService.user.create({
-      data: {
-        name,
-        email,
-        password,
-        picture,
-        method,
-        isVerified,
-      },
-      include: {
-        accounts: true,
-      },
+    if (!name || !email || !password)
+      throw new ConflictException('Name, email, and password are required');
+
+    const newUser = await this.userModel.create({
+      name,
+      email,
+      password,
+      picture,
+      method,
+      isVerified,
     });
 
-    return user;
+    return newUser.toObject();
   }
 }

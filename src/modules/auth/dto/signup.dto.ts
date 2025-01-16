@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, IsString, MinLength, Validate } from 'class-validator';
-import { IsPasswordsMatchDecorator } from '../../../common/decorators/isPasswordsMatch.decorator';
+import { IsPasswordsMatchDecorator } from '@/common/decorators/isPasswordsMatch.decorator';
 
 export class SignupDto {
   @IsString()

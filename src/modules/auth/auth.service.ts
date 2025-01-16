@@ -11,9 +11,9 @@ import { Response } from 'express';
 import { verify } from 'argon2';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { EmailConfirmService } from '../email-confirm/email-confirm.service';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,6 @@ export class AuthService {
     private readonly configService: ConfigService,
     private jwt: JwtService,
     private readonly userService: UserService,
-    private readonly prismaService: PrismaService,
     private readonly emailConfirmService: EmailConfirmService,
   ) {}
 
@@ -41,25 +40,18 @@ export class AuthService {
   }
 
   public async login(dto: LoginDto) {
-    const { password, ...user } = await this.validateUser(dto);
+    const user = await this.userService.findByEmail(dto.email);
+    if (!user) throw new NotFoundException('User not found');
 
-    if (!user.isVerified) {
-      await this.emailConfirmService.sendVerificationToken({
-        name: '',
-        email: user.email,
-        password,
-      });
-      throw new UnauthorizedException(
-        'Your account is not verified. Please check your email for the verification link',
-      );
-    }
+    const isValid = await verify(user.password, dto.password);
+    if (!isValid) throw new BadRequestException('Incorrect password. Please try again');
 
-    const tokens = this.issueTokens(user.id);
+    const tokens = this.issueTokens(user._id as Types.ObjectId);
 
     return { user, ...tokens };
   }
 
-  public issueTokens(userId: string) {
+  public issueTokens(userId: Types.ObjectId) {
     const payload = { id: userId };
 
     const accessToken = this.jwt.sign(payload, {
@@ -82,16 +74,6 @@ export class AuthService {
     const tokens = this.issueTokens(user.id);
 
     return { user, ...tokens };
-  }
-
-  private async validateUser(dto: LoginDto) {
-    const user = await this.userService.findByEmail(dto.email);
-    if (!user) throw new NotFoundException('User not found');
-
-    const isValid = await verify(user.password, dto.password);
-    if (!isValid) throw new BadRequestException('Incorrect password. Please try again');
-
-    return user;
   }
 
   addRefreshToken(res: Response, refreshToken: string) {
