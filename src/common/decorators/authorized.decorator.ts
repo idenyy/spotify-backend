@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { IUser } from '@/common/interfaces/user.interface';
+import { User } from '@/common/schemas/user.schema';
 
-export const Authorized = createParamDecorator((data: keyof IUser, context: ExecutionContext) => {
+export const Authorized = createParamDecorator((data: keyof User, context: ExecutionContext) => {
   const request = context.switchToHttp().getRequest();
   const user = request.user;
 
