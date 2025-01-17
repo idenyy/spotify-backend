@@ -12,7 +12,7 @@ export class MailService {
   ) {}
 
   public async sendConfirmationEmail(name: string, email: string, token: string) {
-    const domain = this.configService.getOrThrow<string>('ALLOWED_ORIGIN');
+    const domain = this.configService.getOrThrow<string>('MAIL_DOMAIN');
     const html = await render(ConfirmationTemplate({ name, domain, token }));
 
     return this.sendMail(email, 'Mail Confirmation', html);
