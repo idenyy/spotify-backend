@@ -7,12 +7,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuid } from 'uuid';
 import { MailService } from '@/common/libs/mail/mail.service';
 import { UserService } from '../user/user.service';
 import { AuthService } from '../auth/auth.service';
 import { ConfirmationDto } from './dto/email-confirm.dto';
 import { hash } from 'argon2';
+import randomstring from 'randomstring';
 import { TokenDocument } from '@/common/schemas/token.schema';
 import { AuthMethod, TokenType } from '@/common/schemas/enums';
 
@@ -75,7 +75,10 @@ export class EmailConfirmService {
     email: string;
     password: string;
   }) {
-    const token = uuid();
+    const token = randomstring.generate({
+      length: 8,
+      charset: 'alphanumeric',
+    });
     const expiresIn = new Date(new Date().getTime() + 1800 * 1000);
 
     const existingToken = await this.tokenModel

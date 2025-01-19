@@ -1,16 +1,13 @@
 import { Html } from '@react-email/html';
-import { Body, Heading, Link, Tailwind, Text } from '@react-email/components';
+import { Body, Heading, Tailwind, Text } from '@react-email/components';
 import * as React from 'react';
 
 interface ConfirmationTemplateProps {
   name: string;
-  domain: string;
   token: string;
 }
 
-export function ConfirmationTemplate({ name, domain, token }: ConfirmationTemplateProps) {
-  const confirmLink = `${domain}/auth/verification?token=${token}`;
-
+export function ConfirmationTemplate({ name, token }: ConfirmationTemplateProps) {
   return (
     <Tailwind>
       <Html>
@@ -22,24 +19,21 @@ export function ConfirmationTemplate({ name, domain, token }: ConfirmationTempla
               </Heading>
             </div>
             <Heading className="text-xl font-bold text-[#1DB954] mb-4 text-center">
-              Account Confirmation
+              Confirm Your Email Address
             </Heading>
-            <Text className="mb-4 text-base text-center">Hi {name},</Text>
+            <Text className="mb-4 text-base text-center">Hello {name},</Text>
             <Text className="mb-6 text-base text-center">
-              Thank you for signing up for Spotify! To complete the account creation process, please
-              confirm your email address by clicking the button below.
+              We're excited to have you join our platform! To finalize your account setup, please
+              confirm your email address using the code below.
             </Text>
             <div className="text-center">
-              <Link
-                className="text-base text-white py-3 px-8 bg-[#1DB954] rounded-full inline-block font-bold hover:bg-[#1ED760]"
-                href={confirmLink}
-              >
-                Confirm Email Address
-              </Link>
+              <p className="text-base text-white py-3 px-8 bg-[#1DB954] rounded-lg inline-block font-bold hover:bg-[#1ED760]">
+                {token}
+              </p>
             </div>
             <Text className="mt-6 text-base text-center">
-              The confirmation link will expire in 30 minutes. If it expires, you’ll need to request
-              a new one.
+              This confirmation code will expire in 30 minutes. If it becomes invalid, you can
+              request a new one from the app.
             </Text>
             <Text className="mt-6 text-xs text-gray-500 text-center">
               &copy; {new Date().getFullYear()} Spotify Clone. All rights reserved.
