@@ -40,9 +40,10 @@ export class AuthService {
 
   public async login(dto: LoginDto) {
     const user = await this.userService.findByEmail(dto.email);
-    const isValid = await verify(user.password, dto.password);
+    if (!user) throw new BadRequestException('Email or password incorrect');
 
-    if (!user || !isValid) throw new BadRequestException('Email or password incorrect');
+    const isValid = await verify(user.password, dto.password);
+    if (!isValid) throw new BadRequestException('Email or password incorrect');
 
     const tokens = this.issueTokens(user._id as Types.ObjectId);
 
