@@ -2,7 +2,6 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
-  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { UserService } from '../user/user.service';
@@ -41,10 +40,9 @@ export class AuthService {
 
   public async login(dto: LoginDto) {
     const user = await this.userService.findByEmail(dto.email);
-    if (!user) throw new NotFoundException('User not found');
-
     const isValid = await verify(user.password, dto.password);
-    if (!isValid) throw new BadRequestException('Incorrect password. Please try again');
+
+    if (!user || !isValid) throw new BadRequestException('Email or password incorrect');
 
     const tokens = this.issueTokens(user._id as Types.ObjectId);
 
