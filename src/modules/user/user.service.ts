@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '@/common/schemas/user.schema';
+import { hash } from 'argon2';
 
 @Injectable()
 export class UserService {
@@ -44,5 +45,16 @@ export class UserService {
     });
 
     return newUser.toObject();
+  }
+
+  public async updatePassword(id: string, password: string) {
+    if (!password) throw new ConflictException('Password is required');
+
+    password = await hash(password);
+
+    const user = await this.userModel.findByIdAndUpdate(id, { password }, { new: true }).exec();
+    if (!user) throw new NotFoundException('User not found');
+
+    return user.toObject();
   }
 }
