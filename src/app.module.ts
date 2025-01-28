@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from '@/modules/mongoose/mongoose.module';
+import { MongooseConfigModule } from '@/modules/mongoose/mongoose.config.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { MailModule } from './common/libs/mail/mail.module';
@@ -12,7 +12,7 @@ import { ResetPasswordModule } from '@/modules/reset-password/reset-password.mod
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule,
+    MongooseConfigModule,
     AuthModule,
     UserModule,
     MailModule,

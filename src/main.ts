@@ -4,11 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import passport from 'passport';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = app.get(ConfigService);
 
+  app.use(passport.initialize());
   app.use(cookieParser(config.getOrThrow<string>('COOKIES_SECRET')));
   app.useGlobalPipes(
     new ValidationPipe({

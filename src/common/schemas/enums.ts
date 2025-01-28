@@ -12,6 +12,11 @@ export enum AuthMethod {
 
 export enum TokenType {
   VERIFICATION = 'VERIFICATION',
-  TWO_FACTOR = 'TWO_FACTOR',
-  PASSWORD_RESET = 'PASSWORD_RESET',
+  RESET_PASSWORD = 'RESET_PASSWORD',
+}
+
+export enum OAuthProvider {
+  GOOGLE = 'google',
+  FACEBOOK = 'facebook',
+  APPLE = 'apple',
 }

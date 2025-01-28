@@ -3,7 +3,7 @@ import { connect, Connection, disconnect } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class MongooseService implements OnModuleInit, OnModuleDestroy {
+export class MongooseConfigService implements OnModuleInit, OnModuleDestroy {
   constructor(private readonly configService: ConfigService) {}
   private connection: Connection;
 

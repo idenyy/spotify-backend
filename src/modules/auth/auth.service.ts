@@ -12,7 +12,11 @@ import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { EmailConfirmService } from '../email-confirm/email-confirm.service';
-import { Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { TokenDocument } from '@/common/schemas/token.schema';
+import { OAuthUser } from '@/common/types/oauth-user';
+import { User } from '@/common/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -21,6 +25,7 @@ export class AuthService {
     private jwt: JwtService,
     private readonly userService: UserService,
     private readonly emailConfirmService: EmailConfirmService,
+    @InjectModel('Account') private readonly accountModel: Model<TokenDocument>,
   ) {}
 
   public async signup(dto: SignupDto) {
@@ -48,6 +53,31 @@ export class AuthService {
     const tokens = this.issueTokens(user._id as Types.ObjectId);
 
     return { user, ...tokens };
+  }
+
+  async validateOAuthUser(provider: string, providerId: string, userData: OAuthUser) {
+    let user: User = await this.userService.findByEmail(userData.email);
+    if (!user)
+      user = await this.userService.create(
+        userData.name,
+        userData.email,
+        '',
+        userData.picture,
+        provider.toUpperCase(),
+        true,
+      );
+
+    const account = await this.accountModel.findOne({ provider, providerId });
+
+    if (!account) {
+      await this.accountModel.create({
+        provider,
+        providerId,
+        user: user._id,
+      });
+    }
+
+    return this.issueTokens(user._id);
   }
 
   public issueTokens(userId: Types.ObjectId) {
@@ -82,16 +112,16 @@ export class AuthService {
     );
 
     res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), refreshToken, {
-      httpOnly: true,
+      httpOnly: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       expires,
-      secure: true,
+      secure: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       sameSite: 'lax',
     });
   }
 
   removeRefreshToken(res: Response) {
     res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), '', {
-      httpOnly: true,
+      httpOnly: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       expires: new Date(0),
       secure: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       sameSite: 'lax',

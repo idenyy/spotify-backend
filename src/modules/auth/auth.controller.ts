@@ -1,18 +1,25 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
+  Param,
+  ParseEnumPipe,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { AuthGuard } from '@nestjs/passport';
+import { OAuthUser } from '@/common/types/oauth-user';
+import { OAuthProvider } from '@/common/schemas/enums';
 
 @Controller('auth')
 export class AuthController {
@@ -35,6 +42,27 @@ export class AuthController {
     this.authService.addRefreshToken(res, refreshToken);
 
     return response;
+  }
+
+  @Get(':provider')
+  @UseGuards(AuthGuard(':provider'))
+  async auth(
+    @Req() req: Request,
+    @Param('provider', new ParseEnumPipe(OAuthProvider)) provider: string,
+  ) {}
+
+  @Get(':provider/callback')
+  @UseGuards(AuthGuard(':provider'))
+  async authRedirect(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('provider', new ParseEnumPipe(OAuthProvider)) provider: string,
+  ) {
+    const user = req.user as OAuthUser;
+    const tokens = await this.authService.validateOAuthUser(user.provider, user.providerId, user);
+    this.authService.addRefreshToken(res, tokens.refreshToken);
+    res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
+    return { user, token: tokens.accessToken };
   }
 
   @Post('refresh-token')
