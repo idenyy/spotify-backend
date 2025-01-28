@@ -47,7 +47,7 @@ export class ResetPasswordService {
     const existingToken = await this.tokenModel
       .findOne({
         token: token,
-        type: TokenType.PASSWORD_RESET,
+        type: TokenType.RESET_PASSWORD,
       })
       .exec();
     if (!existingToken)
@@ -67,7 +67,7 @@ export class ResetPasswordService {
     await this.userService.updatePassword(existingUser.id, dto.password);
 
     await this.tokenModel
-      .deleteOne({ _id: existingToken._id, type: TokenType.PASSWORD_RESET })
+      .deleteOne({ _id: existingToken._id, type: TokenType.RESET_PASSWORD })
       .exec();
 
     return true;
@@ -83,20 +83,20 @@ export class ResetPasswordService {
     const existingToken = await this.tokenModel
       .findOne({
         email,
-        type: TokenType.PASSWORD_RESET,
+        type: TokenType.RESET_PASSWORD,
       })
       .exec();
 
     if (existingToken)
       await this.tokenModel
-        .deleteOne({ _id: existingToken._id, type: TokenType.PASSWORD_RESET })
+        .deleteOne({ _id: existingToken._id, type: TokenType.RESET_PASSWORD })
         .exec();
 
     await this.tokenModel.create({
       email,
       token,
       expiresIn,
-      type: TokenType.PASSWORD_RESET,
+      type: TokenType.RESET_PASSWORD,
       data: {},
     });
 

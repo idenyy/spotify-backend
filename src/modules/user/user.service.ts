@@ -32,9 +32,6 @@ export class UserService {
 
     if (existingUser) throw new ConflictException(`User with email ${email} already exists`);
 
-    if (!name || !email || !password)
-      throw new ConflictException('Name, email, and password are required');
-
     const newUser = await this.userModel.create({
       name,
       email,

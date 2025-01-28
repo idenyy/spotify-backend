@@ -11,15 +11,17 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getJwtConfig } from '@/config/jwt.config';
 import { JwtStrategy } from '../auth/strategies/jwt.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
-import { TokenSchema } from '@/common/schemas/token.schema';
-import { UserSchema } from '@/common/schemas/user.schema';
+import { Token, TokenSchema } from '@/common/schemas/token.schema';
+import { User, UserSchema } from '@/common/schemas/user.schema';
+import { Account, AccountSchema } from '@/common/schemas/account.schema';
 
 @Module({
   imports: [
     MailModule,
     MongooseModule.forFeature([
-      { name: 'Token', schema: TokenSchema },
-      { name: 'User', schema: UserSchema },
+      { name: Token.name, schema: TokenSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Account.name, schema: AccountSchema },
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
