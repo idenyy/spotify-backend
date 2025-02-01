@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-facebook';
 import { ConfigService } from '@nestjs/config';
-import { OAuthUser } from '@/common/types/oauth-user';
+import { IOAuthUser } from '@/common/types/oauth-user';
+import { AuthMethod } from '@/common/schemas/enums';
 
 @Injectable()
 export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
@@ -22,8 +23,8 @@ export class FacebookStrategy extends PassportStrategy(Strategy, 'facebook') {
     done: (error: any, user?: any) => void,
   ) {
     const { id, emails, displayName, photos } = profile;
-    const user: OAuthUser = {
-      provider: 'FACEBOOK',
+    const user: IOAuthUser = {
+      provider: AuthMethod.FACEBOOK,
       providerId: id,
       email: emails?.[0]?.value || '',
       name: displayName,

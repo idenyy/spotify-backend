@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-apple';
 import { ConfigService } from '@nestjs/config';
-import { OAuthUser } from '@/common/types/oauth-user';
+import { IOAuthUser } from '@/common/types/oauth-user';
+import { AuthMethod } from '@/common/schemas/enums';
 
 @Injectable()
 export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
@@ -19,8 +20,8 @@ export class AppleStrategy extends PassportStrategy(Strategy, 'apple') {
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: VerifyCallback) {
     const { id, emails, name } = profile;
-    const user: OAuthUser = {
-      provider: 'APPLE',
+    const user: IOAuthUser = {
+      provider: AuthMethod.APPLE,
       providerId: id,
       email: emails?.[0]?.value || '',
       name: name || 'Apple User',

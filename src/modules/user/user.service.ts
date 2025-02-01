@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '@/common/schemas/user.schema';
 import { hash } from 'argon2';
+import { UserDto } from '@/modules/user/dto/user.dto';
 
 @Injectable()
 export class UserService {
@@ -20,25 +21,18 @@ export class UserService {
     return this.userModel.findOne({ email }).exec();
   }
 
-  public async create(
-    name: string,
-    email: string,
-    password: string,
-    picture: string,
-    method: string,
-    isVerified: boolean,
-  ) {
-    const existingUser = await this.userModel.findOne({ email }).exec();
+  public async create(dto: UserDto) {
+    const existingUser = await this.userModel.findOne({ email: dto.email }).exec();
 
-    if (existingUser) throw new ConflictException(`User with email ${email} already exists`);
+    if (existingUser) throw new ConflictException(`User with email ${dto.email} already exists`);
 
     const newUser = await this.userModel.create({
-      name,
-      email,
-      password,
-      picture,
-      method,
-      isVerified,
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      picture: dto.picture,
+      method: dto.method,
+      isVerified: dto.isVerified,
     });
 
     return newUser.toObject();

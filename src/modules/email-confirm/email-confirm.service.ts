@@ -54,14 +54,14 @@ export class EmailConfirmService {
       password: string;
     };
 
-    const user = await this.userService.create(
+    const user = await this.userService.create({
       name,
       email,
       password,
-      '',
-      AuthMethod.CREDENTIALS,
-      true,
-    );
+      picture: '',
+      method: AuthMethod.CREDENTIALS,
+      isVerified: true,
+    });
 
     await this.tokenModel.deleteOne({ _id: existingToken._id }).exec();
 
