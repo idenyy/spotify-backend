@@ -16,7 +16,7 @@ import { LoginDto } from './dto/login.dto';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from '@nestjs/passport';
-import { OAuthUser } from '@/common/types/oauth-user';
+import { IOAuthUser } from '@/common/types/oauth-user';
 
 @Controller('auth')
 export class AuthController {
@@ -48,40 +48,45 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as OAuthUser;
-    const tokens = await this.authService.validateOAuthUser(user.provider, user.providerId, user);
-    this.authService.addRefreshToken(res, tokens.refreshToken);
-    res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
-    return { user, token: tokens.accessToken };
+    const user = req.user as IOAuthUser;
+    const response = await this.authService.validateOAuthUser(
+      user.provider,
+      user.providerId,
+      user,
+      res,
+    );
+
+    res.redirect(this.configService.getOrThrow<string>('ALLOWED_ORIGIN'));
+    return { accessToken: response.accessToken };
   }
 
-  @Get('facebook')
-  @UseGuards(AuthGuard('facebook'))
-  async facebookAuth() {}
-
-  @Get('facebook/callback')
-  @UseGuards(AuthGuard('facebook'))
-  async facebookAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as OAuthUser;
-    const tokens = await this.authService.validateOAuthUser(user.provider, user.providerId, user);
-    this.authService.addRefreshToken(res, tokens.refreshToken);
-    res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
-    return { user, token: tokens.accessToken };
-  }
-
-  @Get('apple')
-  @UseGuards(AuthGuard('apple'))
-  async appleAuth() {}
-
-  @Get('apple/callback')
-  @UseGuards(AuthGuard('apple'))
-  async appleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const user = req.user as OAuthUser;
-    const tokens = await this.authService.validateOAuthUser(user.provider, user.providerId, user);
-    this.authService.addRefreshToken(res, tokens.refreshToken);
-    res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
-    return { user, token: tokens.accessToken };
-  }
+  // @Get('facebook')
+  // @UseGuards(AuthGuard('facebook'))
+  // async facebookAuth() {}
+  //
+  // @Get('facebook/callback')
+  // @UseGuards(AuthGuard('facebook'))
+  // async facebookAuthRedirect(@Req() req: Request, @Res() res: Response) {
+  //   const user = req.user as IOAuthUser;
+  //   const tokens = await this.authService.validateIOAuthUser(user.provider, user.providerId, user);
+  //   this.authService.addRefreshToken(res, tokens.refreshToken);
+  //   res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
+  //   return { user, token: tokens.accessToken };
+  // }
+  //
+  // @Get('apple')
+  // @UseGuards(AuthGuard('apple'))
+  // async appleAuth() {}
+  //
+  // @Get('apple/callback')
+  // @UseGuards(AuthGuard('apple'))
+  // async appleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+  //   const user = req.user as IOAuthUser;
+  //   const tokens = await this.authService.validateIOAuthUser(user.provider, user.providerId, user);
+  //   this.authService.addRefreshToken(res, tokens.refreshToken);
+  //   res.redirect(`${this.configService.getOrThrow<string>('APPLICATION_URL')}`);
+  //   return { user, token: tokens.accessToken };
+  // }
 
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)

@@ -15,8 +15,9 @@ import { EmailConfirmService } from '../email-confirm/email-confirm.service';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { TokenDocument } from '@/common/schemas/token.schema';
-import { OAuthUser } from '@/common/types/oauth-user';
+import { IOAuthUser } from '@/common/types/oauth-user';
 import { User } from '@/common/schemas/user.schema';
+import { AuthMethod } from '@/common/schemas/enums';
 
 @Injectable()
 export class AuthService {
@@ -55,29 +56,36 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  async validateOAuthUser(provider: string, providerId: string, userData: OAuthUser) {
+  async validateOAuthUser(
+    provider: AuthMethod,
+    providerId: string,
+    userData: IOAuthUser,
+    res: Response,
+  ) {
+    if (!providerId) throw new BadRequestException('Provider ID is missing');
+
     let user: User = await this.userService.findByEmail(userData.email);
     if (!user)
-      user = await this.userService.create(
-        userData.name,
-        userData.email,
-        '',
-        userData.picture,
-        provider.toUpperCase(),
-        true,
-      );
-
-    const account = await this.accountModel.findOne({ provider, providerId });
-
-    if (!account) {
-      await this.accountModel.create({
-        provider,
-        providerId,
-        user: user._id,
+      user = await this.userService.create({
+        name: userData.name,
+        email: userData.email,
+        password: '',
+        picture: userData.picture,
+        method: provider,
+        isVerified: true,
       });
-    }
 
-    return this.issueTokens(user._id);
+    await this.accountModel.findOneAndUpdate(
+      { provider, providerId },
+      { provider, providerId, user: user._id },
+      { upsert: true, new: true },
+    );
+
+    const tokens = this.issueTokens(user._id);
+
+    this.addRefreshToken(res, tokens.refreshToken);
+
+    return { accessToken: tokens.accessToken };
   }
 
   public issueTokens(userId: Types.ObjectId) {
@@ -107,11 +115,9 @@ export class AuthService {
 
   addRefreshToken(res: Response, refreshToken: string) {
     const expires = new Date();
-    expires.setDate(
-      expires.getDate() + this.configService.getOrThrow<number>('COOKIES_REFRESH_TOKEN_AGE'),
-    );
+    expires.setDate(expires.getDate() + this.configService.getOrThrow<number>('COOKIES_TOKEN_AGE'));
 
-    res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), refreshToken, {
+    res.cookie(this.configService.getOrThrow<string>('COOKIES_TOKEN_NAME'), refreshToken, {
       httpOnly: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       expires,
       secure: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
