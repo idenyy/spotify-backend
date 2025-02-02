@@ -126,7 +126,7 @@ export class AuthService {
   }
 
   removeRefreshToken(res: Response) {
-    res.cookie(this.configService.getOrThrow<string>('COOKIES_REFRESH_TOKEN_NAME'), '', {
+    res.cookie(this.configService.getOrThrow<string>('COOKIES_TOKEN_NAME'), '', {
       httpOnly: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
       expires: new Date(0),
       secure: this.configService.getOrThrow<string>('NODE_ENV') === 'production',
