@@ -11,7 +11,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID: configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
       clientSecret: configService.getOrThrow<string>('GOOGLE_CLIENT_SECRET'),
-      callbackURL: `${configService.getOrThrow<string>('APPLICATION_URL')}/auth/google/callback`,
+      callbackURL: 'https://spotify-server-api-28ab9bd01e44.herokuapp.com/auth/google/callback',
       scope: ['email', 'profile'],
     });
   }
