@@ -8,10 +8,15 @@ import { AuthMethod } from '@/common/schemas/enums';
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(configService: ConfigService) {
+    console.log(
+      'Google OAuth callbackURL:',
+      configService.getOrThrow<string>('GOOGLE_REDIRECT_URI'),
+    );
+
     super({
       clientID: configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
       clientSecret: configService.getOrThrow<string>('GOOGLE_CLIENT_SECRET'),
-      callbackURL: 'https://spotify-server-api-28ab9bd01e44.herokuapp.com/auth/google/callback',
+      callbackURL: configService.getOrThrow<string>('GOOGLE_REDIRECT_URI'),
       scope: ['email', 'profile'],
     });
   }
